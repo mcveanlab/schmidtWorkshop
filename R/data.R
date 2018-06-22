@@ -2,8 +2,8 @@
 # Descrption: sw.data
 #
 ###################################################################/
-sw.data = function( dir, external = FALSE )
+sw.data = function( )
 {
-  data = data.table( x = 1, pValue = 0.1 )
+  data = data.table( pValue = runif( 1e4, 0 , 1 ) )
   return( data )
 }

@@ -1,5 +1,7 @@
 # exposed functions
 export( sw.data )
+export( sw.plot.qq )
 
 # packages used
 import( data.table )
+import( plotly )
