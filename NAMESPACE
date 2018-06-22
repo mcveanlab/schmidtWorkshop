@@ -1,0 +1,5 @@
+# exposed functions
+export( sw.data )
+
+# packages used
+import( data.table )
