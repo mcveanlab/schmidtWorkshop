@@ -1,5 +1,6 @@
 # exposed functions
-export( sw.data )
+export( sw.data.univariate  )
+export( sw.data.tree )
 export( sw.plot.qq )
 
 # packages used
