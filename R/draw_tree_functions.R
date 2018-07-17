@@ -10,11 +10,6 @@ draw_tree <- function(
   only.get.stats = FALSE,
   trim_tree_pp = NULL
 ) {
-
-  require("Rgraphviz")
-  require("plotly")
-  require("magrittr")
-
   if( ! is.null(trim_tree_pp) ) {
     tmp <- trim_tree(tree=tree,pp=pp,pp.thr=trim_tree_pp)
     tree <- tmp$tree
