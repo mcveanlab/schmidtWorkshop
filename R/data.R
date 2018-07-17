@@ -25,5 +25,23 @@ sw.data.tree = function( )
   return( tree )
 }
 
+###################################################################/
+# Descrption: Data object with likelihood surfaces for the ABO
+# SNP in the ICD-10 UK Biobank data set
+###################################################################/
+ABO.lk.surfs = function( ) {
+    file = system.file( 'ABO.lk.surfs.rdata', package = "schmidtWorkshop" )
+    load( file )
+    return( ABO.data )
+}
+
+ABO.lk.pars = function( ) {
+    file = system.file( 'ABO.lk.surfs.rdata', package = "schmidtWorkshop" )
+    load( file )
+    return( ABO.pars )
+}
+
+
+        
 
 

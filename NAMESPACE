@@ -2,7 +2,15 @@
 export( sw.data.univariate  )
 export( sw.data.tree )
 export( sw.plot.qq )
+export( ABO.lk.surfs )
+export( ABO.lk.pars )
+export( calc.lBF )
+export( marginal.posterior.profile )
+export( draw_tree )
+export( trim_tree )
 
 # packages used
 import( data.table )
 import( plotly )
+import( Rgraphviz )
+import( magrittr )
