@@ -219,7 +219,7 @@ map2color <- function(x,pal,limits=NULL){
 
 trim_tree <- function(tree = tree, pp = pp, pp.thr = 0.75) {
 
-  idx <- which(pp[,2] < 1 - 0.75)
+  idx <- which(pp[,2] < 1 - pp.thr)
 
   t2 <- tree[idx,]
   siblings <- unique(unlist(lapply(t2$ID,get_tree_siblings,tree)))
