@@ -1,27 +1,56 @@
-#' draw_tree
-#'
-#' @export
-#'
+###################################################################/
+# Descrption: draw_tree_univariate
+###################################################################/
+draw_tree_univariate <- function(
+  tree,
+  title            = "Univariate Analysis",
+  pValueThreshold  = 1e-5,
+  pValueSaturation = 1e-50
+)
+{
+  # convert threshold to log
+  lThresh = log( pValueThreshold ) / log( 10 )
+  lSat    = log( pValueSaturation) / log( 10 )
+  if( lSat > lThresh )
+    lWidth = 1e-5
+  else
+    lWidth = lThresh - lSat
 
+  # convert data to form required by Adrian's function
+  pp = data.table( tree )[ , .(  BETA = ifelse( is.na( BETA ), 0, BETA  ), logPval = ifelse( is.na( Pval), 0, ifelse( Pval < 1e-185, -185, log( Pval ) / log( 10 ) ) ) ) ]
+  pp[ , effPp := ifelse( logPval > lThresh, 0, pmin( 1, ( lThresh - logPval ) / lWidth ) ) ]
+  pp[ , effPp := ifelse( effPp > 0, effPp / 2 + 0.5, 0 ) ]
+
+  pp = as.matrix( pp[ , .( ifelse( BETA < 0, effPp, 0 ), 1 - effPp, ifelse( BETA > 0, effPp, 0 ) ) ] )
+  # finally drawer tree
+  draw_tree( tree, pp, tree_title = title,trim_tree_pp = 0.01, measureName = "pValue", measureValueFunc = function( t, p ) return( as.data.table( t )[ , format( Pval, digits = 3 ) ] ) )
+}
+
+###################################################################/
+# Descrption: draw_tree
+###################################################################/
 draw_tree <- function(
-  tree = NULL,
-  pp = NULL,
-  tree_title = NULL,
+  tree           = NULL,
+  pp             = NULL,
+  tree_title     = "Tree",
   only.get.stats = FALSE,
-  trim_tree_pp = NULL
-) {
-  if( ! is.null(trim_tree_pp) ) {
-    tmp <- trim_tree(tree=tree,pp=pp,pp.thr=trim_tree_pp)
+  trim_tree_pp   = NULL,
+  measureName    = "PP_active",
+  measureValueFunc = function( tree, pp ) return( round( 1 - pp[ ,2 ] , 2) )
+)
+{
+  # remove tree if posterior probability is to low
+  if( !is.null( trim_tree_pp ) )
+  {
+    tmp  <- trim_tree( tree = tree, pp = pp, pp.thr = trim_tree_pp )
     tree <- tmp$tree
-    pp <- tmp$pp
-
+    pp   <- tmp$pp
   }
-
-  if(is.null(tree_title)) tree_title <- "Tree"
 
   matrix <- matrix(0, ncol = nrow(tree), nrow = nrow(tree))
 
-  for( i in 1:(nrow(tree)-1) ) {
+  for( i in 1:( nrow( tree ) - 1 ) )
+  {
     p <- tree[i,"Par"]
     c <- tree[i,"ID"]
     matrix[p,c] <- 1
@@ -43,7 +72,7 @@ draw_tree <- function(
     "<br>",
     "State: ",node_state,
     "<br>",
-    "PP_active = ",round(1-pp[,2],2),
+    measureName, "= ", measureValueFunc( tree, pp ),
     sep = ""
   )
 
@@ -107,7 +136,7 @@ draw_tree <- function(
   xlim <- c(xlim0, xlim1)
 
   ## Add an axis.
-  p %<>% plotly::layout(
+  p = plotly::layout(
     p,
     title      = tree_title,
     xaxis      = list(
@@ -158,18 +187,14 @@ draw_tree <- function(
     }
 
     edges.p[[i]] <- points
-
-    heads = bezierPoints(z)
-
+    heads     = bezierPoints(z)
     head_from = heads[nrow(heads)-1, ]
     head_to   = heads[nrow(heads),]
-
-
-  }
+}
 
   ## Add the nodes
   order <- order(pp[,2],decreasing=TRUE)
-  p %<>% plotly::add_trace(
+  p = plotly::add_trace( p,
     x          = nodeRI$NODEX[order],
     y          = nodeRI$NODEY[order],
     type       = "scatter",
@@ -191,34 +216,23 @@ draw_tree <- function(
   return(out)
 }
 
-#' map2color
-#'
-#' @param arg input
-#' @export
-#' @examples
-#' map2color()
-#'
-
-map2color <- function(x,pal,limits=NULL){
-  if(is.null(limits)) limits=range(x)
-  pal[findInterval(
+###################################################################/
+# Descrption: map2color
+###################################################################/
+map2color <- function( x, pal, limits = range(x) )
+{
+  return( pal[ findInterval(
     x,
     seq(limits[1],limits[2],length.out=length(pal)+1),
     all.inside=TRUE
-  )]
+  ) ] )
 }
 
-
-#' trim_tree
-#'
-#' @param arg input
-#' @export
-#' @examples
-#' trim_tree()
-#'
-
-trim_tree <- function(tree = tree, pp = pp, pp.thr = 0.75) {
-
+###################################################################/
+# Descrption: trim_tree
+###################################################################/
+trim_tree <- function( tree = tree, pp = pp, pp.thr = 0.75 )
+{
   idx <- which(pp[,2] < 1 - pp.thr)
 
   t2 <- tree[idx,]
@@ -242,40 +256,27 @@ trim_tree <- function(tree = tree, pp = pp, pp.thr = 0.75) {
   return(o)
 }
 
-
-#' get_tree_siblings
-#'
-#' @param arg input
-#' @export
-#' @examples
-#' get_tree_siblings()
-#'
-
-get_tree_siblings <- function(id,tree) {
-
+###################################################################/
+# Descrption: get_tree_siblings
+###################################################################/
+get_tree_siblings <- function(id,tree)
+{
   par_id <- tree[ tree$ID %in% id, "Par"]
   sibling_ids <- tree[ tree$Par %in% par_id, "ID"]
 
   return(sibling_ids)
 }
 
-
-#' get_path_ids_to_root
-#'
-#' @param arg input
-#' @export
-#' @examples
-#' get_path_ids_to_root()
-#'
-
-get_path_ids_to_root <- function(id,tree) {
-
-  out <- id
+###################################################################/
+# Descrption: get_path_ids_to_root
+###################################################################/
+get_path_ids_to_root <- function( id, tree )
+{
+  out     <- id
   root_id <- tree[ nrow(tree), "ID"]
 
-  while( ! root_id %in% out ) {
-    out <- unique(c(out,tree[ tree$ID %in% out, "Par"]))
-  }
+  while( ! root_id %in% out )
+    out <- unique( c ( out, tree[ tree$ID %in% out, "Par" ] ) )
 
   return(out)
 }
