@@ -2,12 +2,25 @@
 # Descrption: draw_tree_univariate
 ###################################################################/
 draw_tree_univariate <- function(
-  tree,
+  data,
   title            = "Univariate Analysis",
   pValueThreshold  = 1e-5,
   pValueSaturation = 1e-50
 )
 {
+  # make sure data is correct form
+  if( !is.data.table( data ) )
+    data = as.data.table( data )
+
+  if( length( setdiff( c( "Code", "pValue", "beta" ), names( data ) ) != 0 ) )
+    throw( "input data requires pValue, beta and  Code columns")
+  data = data[ ,.( coding = Code, Pval = pValue, BETA = beta ) ]
+
+  # get whole tree data
+  tree = mi.univariate( originalCols = TRUE )
+  tree = tree[ ,.( ID, Par, coding, meaning ) ]
+  tree = data[ tree, on = "coding" ]
+
   # convert threshold to log
   lThresh = log( pValueThreshold ) / log( 10 )
   lSat    = log( pValueSaturation) / log( 10 )
@@ -23,7 +36,7 @@ draw_tree_univariate <- function(
 
   pp = as.matrix( pp[ , .( ifelse( BETA < 0, effPp, 0 ), 1 - effPp, ifelse( BETA > 0, effPp, 0 ) ) ] )
   # finally drawer tree
-  draw_tree( tree, pp, tree_title = title,trim_tree_pp = 0.01, measureName = "pValue", measureValueFunc = function( t, p ) return( as.data.table( t )[ , format( Pval, digits = 3 ) ] ) )
+  draw_tree( as.data.frame( tree ), pp, tree_title = title,trim_tree_pp = 0.01, measureName = "pValue", measureValueFunc = function( t, p ) return( as.data.table( t )[ , format( Pval, digits = 3 ) ] ) )
 }
 
 ###################################################################/

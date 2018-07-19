@@ -1,28 +1,28 @@
 ###################################################################/
-# Descrption: sw.data.univariate
+# Descrption: mi.univariate.subset
 #
 ###################################################################/
-sw.data.univariate = function( )
+mi.univariate.subset = function( )
 {
-  file = system.file( 'ABO.1df.res.rdata', package = "schmidtWorkshop" )
-  load( file )
-  return( as.data.table( data[ !is.na( pValue )] ) )
+  selection = c( "I251", "E780", "M206", "S9211", "M4792", "I422", "C837", "I461", "B24", "G35")
+  return( mi.univariate()[ Code %in% selection ][ order( pValue )] )
 }
 
 ###################################################################/
-# Descrption: sw.data.tree
+# Descrption: mi.univariate
 #
 ###################################################################/
-sw.data.tree = function( )
+mi.univariate = function( originalCols = FALSE )
 {
-  file = system.file( 'ABO.lk.surfs.rdata', package = "schmidtWorkshop" )
+  file = system.file( 'MI_GRS_tree.rdata', package = "schmidtWorkshop" )
   load( file )
-  tree = as.data.table( tree )
-  tree[  , L_minus := d[ , 1 ] ]
-  tree[  , L_0     := d[ , 2 ] ]
-  tree[  , L_plus  := d[ , 3 ] ]
+  data = as.data.table( MI_GRS_tree )
 
-  return( tree )
+  if( originalCols == TRUE )
+    return( data )
+
+  setnames( data, c( "coding", "meaning", "Naffected", "BETA", "Pval" ), c( "Code", "Description", "N", "beta", "pValue") )
+  return( data[, .( Code, Description, N, beta, pValue ) ][ order( pValue ) ] )
 }
 
 ###################################################################/
@@ -42,6 +42,6 @@ ABO.lk.pars = function( ) {
 }
 
 
-        
+
 
 
