@@ -7,6 +7,7 @@ export( ABO.lk.pars )
 export( calc.lBF )
 export( marginal.posterior.profile )
 export( draw_tree )
+export( draw_tree_univariate )
 export( trim_tree )
 
 # packages used

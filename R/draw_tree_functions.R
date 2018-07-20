@@ -36,7 +36,7 @@ draw_tree_univariate <- function(
 
   pp = as.matrix( pp[ , .( ifelse( BETA < 0, effPp, 0 ), 1 - effPp, ifelse( BETA > 0, effPp, 0 ) ) ] )
   # finally drawer tree
-  draw_tree( as.data.frame( tree ), pp, tree_title = title,trim_tree_pp = 0.01, measureName = "pValue", measureValueFunc = function( t, p ) return( as.data.table( t )[ , format( Pval, digits = 3 ) ] ) )
+  draw_tree( as.data.frame( tree ), pp, tree_title = title,trim_tree_pp = 0.01, measureName = "pValue", measureValueFunc = function( t, p ) return( as.data.table( t )[ , format( Pval, digits = 3 ) ] ) )$plot
 }
 
 ###################################################################/
