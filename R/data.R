@@ -26,6 +26,18 @@ mi.univariate = function( originalCols = FALSE )
 }
 
 ###################################################################/
+# Descrption: ABO.univariate
+#
+###################################################################/
+ABO.univariate = function()
+{
+  file = system.file( 'ABO.1df.res.rdata', package = "schmidtWorkshop" )
+  load( file )
+  data = as.data.table( data )
+  return( data[ !is.na( pValue ), .( Code = coding, Description = meaning, N = COUNTS, beta = log( OR ), pValue ) ][ order( pValue ) ] )
+}
+
+###################################################################/
 # Descrption: Data object with likelihood surfaces for the ABO
 # SNP in the ICD-10 UK Biobank data set
 ###################################################################/
