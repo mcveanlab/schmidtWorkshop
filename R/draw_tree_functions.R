@@ -293,3 +293,202 @@ get_path_ids_to_root <- function( id, tree )
 
   return(out)
 }
+
+grs.trim_tree <- function( tree = tree, pp = pp, pp.thr = 0.75 )
+{
+  idx <- which(pp$POST_ACTIVE >= pp.thr)
+
+  t2 <- tree[idx,]
+  siblings <- unique(unlist(lapply(t2$ID,get_tree_siblings,tree)))
+  paths_to_root <- unique(unlist(lapply(t2$ID,get_path_ids_to_root,tree)))
+
+  nodes_to_keep <- sort(unique(c(t2$ID,siblings,paths_to_root)),decreasing=F)
+
+  t2 <- tree[tree$ID %in% nodes_to_keep, ]
+  pp2 <- pp[tree$ID %in% nodes_to_keep,]
+
+  new_id <- 1:nrow(t2)
+  new_par <- new_id[match(t2$Par,t2$ID)]
+
+  t2$ID <- new_id
+  t2$Par <- new_par
+
+  t2[nrow(t2),'Par'] <- 0
+  o <- list(tree=t2,pp=pp2)
+
+  return(o)
+}
+
+###################################################################/
+# Descrption: GRS draw_tree
+###################################################################/
+grs.draw_tree <- function(
+  tree           = NULL,
+  pp             = NULL,
+  tree_title     = "GRS Tree",
+  only.get.stats = FALSE,
+  trim_tree_pp   = NULL
+) {
+
+    if ( ! is.null( trim_tree_pp ) ) {
+        tmp  <- grs.trim_tree( tree = tree, pp = pp, pp.thr = trim_tree_pp )
+        tree <- tmp$tree
+        pp   <- tmp$pp
+    }
+
+    matrix <- matrix(0, ncol = nrow(tree), nrow = nrow(tree))
+
+    for( i in 1:( nrow( tree ) - 1 ) ) {
+        p <- tree[i,"Par"]
+        c <- tree[i,"ID"]
+        matrix[p,c] <- 1
+    }
+
+    rownames(matrix) <- tree$ID
+    colnames(matrix) <- tree$ID
+    labels = tree$ID
+    
+    graph <- new("graphAM", adjMat = matrix, edgemode = 'directed')
+
+    lGraph <- layoutGraph(graph)
+    ninfo <- nodeRenderInfo(lGraph)
+
+    node_labels <- paste(
+        tree$meaning,"<br>",
+        "beta: ",round(pp$max_b,2),"<br>",
+        "PP: ",round(pp$POST_ACTIVE,2),"<br>",
+        sep = ""
+    )
+
+    nodeRI = data.frame(
+        NODE    = names(ninfo$nodeX),
+        PP      = as.numeric(pp$POST_ACTIVE),
+        NODEX   = ninfo$nodeX,
+        NODEY   = ninfo$nodeY,
+        MEANING = tree$meaning,
+        LABEL   = node_labels
+    )
+
+    col_pal_risk <- colorRampPalette( c( "white", rgb(112, 28, 28, max=255) ) )( 100 )
+    col_pal_prot <- colorRampPalette( c( "white", rgb(8, 37, 103, max=255) ) )(100)
+
+    cols1 <- map2color(pp$POST_ACTIVE, col_pal_risk, limits = c(0,1))
+    cols2 <- map2color(pp$POST_ACTIVE, col_pal_prot, limits = c(0,1))
+
+    bar.cols <- rep("white",nrow(tree))
+    bar.cols[pp$max_b < 0] <- cols2[pp$max_b < 0]
+    bar.cols[pp$max_b > 0] <- cols1[pp$max_b > 0]
+    
+    nodeRI$COL <- bar.cols
+
+    attrs <- list(node = list(fillcolor = 'white'), edge = list(arrowsize=0.5))
+
+    cols <- nodeRI$COL
+    names(cols) <- labels
+    
+    nattrs <- list(fillcolor=cols)
+    
+    nodes <- buildNodeList(graph, nodeAttrs=nattrs, defAttrs=attrs$node)
+    edges <- buildEdgeList(graph)
+    vv <- agopen(name="foo", nodes=nodes, edges=edges, attrs=attrs,
+                 edgeMode="directed")
+
+    x <- vv
+    y <- x@layoutType
+    x <- graphLayout(x, y)
+    ur <- upRight(boundBox(x))
+    bl <- botLeft(boundBox(x))
+
+    out <- list()
+    out$nodeRI <- nodeRI
+
+    ##%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    ## Initalize plotly
+    ##%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    p <- plotly::plot_ly()
+    
+    xlim1 <- getX(ur)*1.02
+    xlim0 <- -xlim1*0.02
+    xlim <- c(xlim0, xlim1)
+
+    ## Add an axis.
+    p = plotly::layout(
+        p,
+        title      = tree_title,
+        xaxis      = list(
+            title          = "",
+            showgrid       = FALSE,
+            showticklabels = FALSE,
+            showline       = FALSE,
+            zeroline       = FALSE,
+            range          = xlim
+        ),
+        yaxis      = list(
+            title          = "",
+            showgrid       = FALSE,
+            showticklabels = FALSE,
+            showline       = FALSE,
+            zeroline       = FALSE,
+            range          = c(getY(bl), getY(ur))
+        ),
+        showlegend = FALSE
+    )
+
+    out$xlim = xlim
+
+    ## Add the edges
+    edges <- AgEdge(x)
+    edges.p <- list()
+    
+    for( i in 1:length(edges) ) {
+        
+        edge <- edges[[i]]
+        node.to <- edge@head
+        node.from <- edge@tail
+        
+        for ( j in 1:length(splines(edge)) ) {
+            z <- splines(edge)[[j]]
+            points <- matrix(unlist(pointList(z)),ncol=2,byrow=TRUE)
+        
+            p <- add_trace(
+                p,
+                x          = points[,1],
+                y          = points[,2],
+                type       = "scatter",
+                mode       = "lines",
+                hoverinfo  = "none",
+                line       = list(color = "gray"),
+                showlegend = FALSE
+            )
+        }
+        
+        edges.p[[i]] <- points
+        heads     = bezierPoints(z)
+        head_from = heads[nrow(heads)-1, ]
+        head_to   = heads[nrow(heads),]
+    }
+    
+    ## Add the nodes
+    order <- order(nodeRI$PP,decreasing=F)
+
+    tmp <- nodeRI[order,]
+    
+    p = plotly::add_trace(
+        p,
+        x          = nodeRI$NODEX[order],
+        y          = nodeRI$NODEY[order],
+        type       = "scatter",
+        mode       = "markers",
+        text       = nodeRI$LABEL[order],
+        hoverinfo  = "text",
+        marker     = list(
+            size   = 20,
+            symbol = "circle",
+            color = nodeRI$COL[order],
+            line  = list( color = "black", width = 0.5)
+        ),
+        showlegend = FALSE
+    )
+
+    return(p)
+}

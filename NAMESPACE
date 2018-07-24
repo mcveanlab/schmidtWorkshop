@@ -10,6 +10,11 @@ export( marginal.posterior.profile )
 export( draw_tree )
 export( draw_tree_univariate )
 export( trim_tree )
+export( grs.draw_tree )
+export( grs.get.posterior.node_1d )
+export( grs.calc.llk.tree )
+export( grs.calc.lBF )
+export( grs.marginal.posterior )
 
 # packages used
 import( data.table )
