@@ -53,7 +53,12 @@ ABO.lk.pars = function( ) {
     return( ABO.pars )
 }
 
-
-
-
-
+###################################################################/
+# Descrption: Data object with likelihood surfaces for the MI GRS
+# in the ICD-10 UK Biobank data set
+###################################################################/
+MI_GRS.lk.surfs = function( ) {
+    file = system.file( 'MI_GRS_UKBB_data.rdata', package = 'schmidtWorkshop' )
+    load( file )
+    return( list( llk.data = llk.data, tree = tree ) )
+}
