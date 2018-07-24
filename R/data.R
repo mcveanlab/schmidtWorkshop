@@ -60,5 +60,5 @@ ABO.lk.pars = function( ) {
 MI_GRS.lk.surfs = function( ) {
     file = system.file( 'MI_GRS_UKBB_data.rdata', package = 'schmidtWorkshop' )
     load( file )
-    return( list( llk.data = llk.data, tree = tree ) )
+    return( list( llk.data = llk.data, tree = tree, prior = prior ) )
 }

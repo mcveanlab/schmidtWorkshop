@@ -201,6 +201,9 @@ grs.calc.lBF <- function(
     eps = 1e-200
 ) {
 
+    p00 <- p.stay+p.switch*(1-pi1);
+    logp00 <- log(p00);
+    
     i.ter <- tree[which(!(tree[,'ID'] %in% tree[,'Par'])),'ID'];
     i.par <- setdiff(tree[,'ID'], i.ter);
     i.with.data <- which(tree$selectable %in% "Y")

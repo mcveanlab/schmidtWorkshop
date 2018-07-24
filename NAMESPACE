@@ -15,6 +15,7 @@ export( grs.get.posterior.node_1d )
 export( grs.calc.llk.tree )
 export( grs.calc.lBF )
 export( grs.marginal.posterior )
+export( MI_GRS.lk.surfs )
 
 # packages used
 import( data.table )
