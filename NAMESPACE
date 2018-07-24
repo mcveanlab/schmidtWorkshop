@@ -16,6 +16,8 @@ export( grs.calc.llk.tree )
 export( grs.calc.lBF )
 export( grs.marginal.posterior )
 export( MI_GRS.lk.surfs )
+export( grs.plot.lk.surface )
+
 
 # packages used
 import( data.table )

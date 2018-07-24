@@ -1,3 +1,34 @@
+
+###################################################################
+## Descrption: function to draw the likelihood surface in the GRS
+## analysis
+###################################################################
+grs.plot.lk.surface <- function(
+    code = NULL,
+    tree = NULL,
+    prior = NULL,
+    lk.surfs = NULL
+) {
+
+    if ( is.null(code) | is.null(tree) | is.null(prior) | is.null(lk.surfs) )
+        stop("missing function argument.\n")
+    
+    code.idx <- which(tree$coding %in% code)
+    code.meaning <- tree[code.idx,'meaning']
+    
+    plot(
+        prior$b.grid,
+        lk.surfs[[code.idx]]$op,
+        xlab = 'beta',
+        ylab = 'likelihood (scaled)',
+        pch = 19,
+        col = 'black',
+        bty = 'l',
+        main = code.meaning
+    )
+
+}
+
 ###################################################################/
 # Descrption: draw_tree_univariate
 ###################################################################/
