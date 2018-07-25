@@ -1,11 +1,11 @@
 
-library( data.table )
-library( plotly )
-library( Rgraphviz )
-library( graph )
-library( BiocGenerics )
-library( parallel )
-library( magrittr )
+sshhh <- function(a.package){
+  suppressWarnings(suppressPackageStartupMessages(
+    library(a.package, character.only=TRUE)))
+}
+
+pkgs <- c("data.table", "plotly", "Rgraphviz", "graph", "BiocGenerics", "parallel", "magrittr")
+loads <- sapply(pkgs, sshhh)
 
 ###################################################################/
 # Descrption: mi.univariate.subset
