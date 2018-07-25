@@ -620,7 +620,7 @@ plot.qq = function( data, annot.col = 'Description' )
     ## make plot
     plot = plot_ly( data, x = ~zTheor, y = ~zData, type = "scatter", mode = "markers", name = "data", text = data[, get( annot.col )], hoverinfo = "text" )
     plot = layout( plot,
-      xaxis = list( title = "theoreitcal z-score", range = list( floor( data[,min( zTheor ) ] ), ceiling( data[, max( zTheor ) ] ) ) ),
+      xaxis = list( title = "theoretical z-score", range = list( floor( data[,min( zTheor ) ] ), ceiling( data[, max( zTheor ) ] ) ) ),
       yaxis = list( title = "data z-score" ),
       title = "Q-Q Plot"
     )
